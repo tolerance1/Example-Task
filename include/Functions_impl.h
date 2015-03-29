@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <fstream>
 #include <iomanip>
+#include <stdexcept>
+#include <sstream>
 
 #include "HourlyWaged.h"
 #include "MonthlyWaged.h"
@@ -14,16 +16,16 @@ using namespace std;
 
 
 template<typename T>
-bool Functions::SortOnName<T>::operator() (const T& pLeft_object, const T& pRight_object)
+bool Functions::SortOnSalary<T>::operator() (const T& pLeft_object, const T& pRight_object)
 {
 
-    if(pLeft_object->GetAvgSalary() == pRight_object->GetAvgSalary())
+    if(pLeft_object->getAvgSalary() == pRight_object->getAvgSalary())
     {
-        return (pLeft_object->GetName() < pRight_object->GetName());
+        return (pLeft_object->getName() < pRight_object->getName());
     }
     else
     {
-        return (pLeft_object->GetAvgSalary() > pRight_object->GetAvgSalary());//max-to-min
+        return (pLeft_object->getAvgSalary() > pRight_object->getAvgSalary());//max-to-min
     }
 
 }
@@ -43,19 +45,20 @@ void Functions::DeleteObjectsBeforeExit (T& ContainerInput)
 
 
 template<typename T>
-void Functions::DisplayContainer (const T& ContainerInput)
+void Functions::OutputContainer (ostream& os, const T& ContainerInput)
 {
-    cout << left << setw(5) << "Num." << setw(5) << "ID"
+    os << left << setw(5) << "Num." << setw(5) << "ID"
     << setw(15) << "Name" << setw(15) << "Surname" << setw(15) << "AvgSalary" << endl;
 
     for(auto Iterator = ContainerInput.cbegin();//auto = typename T::const_iterator
     Iterator != ContainerInput.cend();
     ++Iterator)
     {
-        cout << left << setw(5) << distance(ContainerInput.cbegin(), Iterator)
-        << setw(5) << (*Iterator)->GetEmployeeID() << setw(15) << (*Iterator)->GetName()
-        << setw(15) << (*Iterator)->GetSurname() << setw(15)
-        << (*Iterator)->GetAvgSalary() << endl;
+        size_t elementPosition = distance(ContainerInput.cbegin(), Iterator);
+
+        os << left << setw(5) << ++elementPosition << setw(5) << (*Iterator)->getEmployeeID()
+        << setw(15) << (*Iterator)->getName() << setw(15) << (*Iterator)->getSurname()
+        << setw(15) << (*Iterator)->getAvgSalary() << endl;
     }
 
 }
@@ -64,19 +67,73 @@ void Functions::DisplayContainer (const T& ContainerInput)
 template<typename T>
 void Functions::PopulateContainer(T& ContainerInput)
 {
-    ContainerInput.insert(new HourlyWaged("D_Stas", "Tolerance", 20.0));
-    ContainerInput.insert(new MonthlyWaged("d_Bill", "Gates", 20.0));
-    ContainerInput.insert(new HourlyWaged("C_Average", "Joe", 19.0));
-    ContainerInput.insert(new MonthlyWaged("c_Viktor", "Yanukovich'", 19.0));
-    ContainerInput.insert(new HourlyWaged("B_Jane", "Roe", 18.0));
-    ContainerInput.insert(new MonthlyWaged("b_Frank", "Foe", 18.0));
-    ContainerInput.insert(new HourlyWaged("A_Tommy", "Toe", 18.0));
-    ContainerInput.insert(new MonthlyWaged("a_Karren", "Koe", 18.0));
+    ifstream input("Employees.txt");
+
+    if(input)//if successfully opened
+    {
+        for(size_t lineNumber = 1; input.good(); ++lineNumber)//while not EOF
+        {
+            string line;
+            getline(input, line);
+
+            //replace each comma with a space
+            for_each(line.begin(), line.end(),
+                     [](char& c){if(c == ',') c = ' ';} );
+
+            //remove consecutive duplicate spaces
+            string::iterator newEnd =
+            unique(line.begin(), line.end(),
+                   [](char& ch1, char& ch2){return (ch1 == ' ' && ch2 == ' ');} );
+
+            //erase the shifted duplicates
+            line.erase(newEnd, line.end());
+
+
+            string name, surname, wageType;
+            double rate = 0.0;
+
+            //extract the data
+            istringstream iss(line);
+            iss >> name >> surname >> rate >> wageType;
+
+
+            //check the line format
+            if(wageType.empty() || rate <= 0.0 || surname.empty() || name.empty())
+            {
+                ostringstream oss;
+                oss << "Line " << lineNumber << ": Bad format: \"" << line << "\"" << endl;
+                throw runtime_error(oss.str());
+            }
+
+            //avoid potential typing errors
+            for(char& c : wageType)//for every char in the string
+            {
+                c = tolower(c);
+            }
+
+            if(wageType == "hourly")
+            {
+                ContainerInput.insert(new HourlyWaged(name, surname, rate));
+            }
+            else if(wageType == "monthly")
+            {
+                ContainerInput.insert(new MonthlyWaged(name, surname, rate));
+            }
+            else
+            {
+                ostringstream oss;
+                oss << "Line " << lineNumber << ": Incorrect wage type: \"" << line << "\"" << endl;
+                throw runtime_error(oss.str());
+            }
+        }
+    }
+    else
+        throw runtime_error("Failed to open a file.");
 }
 
 
 template<typename T>
-void Functions::DisplayFirst5Names(T& ContainerInput)
+void Functions::DisplayFirst5names(const T& ContainerInput)
 {
     cout << "Num.\tName" << endl;
 
@@ -84,13 +141,16 @@ void Functions::DisplayFirst5Names(T& ContainerInput)
 
     advance(RangeEnd, 5);
 
+    size_t counter = 0;
+
     for_each(ContainerInput.cbegin(), RangeEnd,
-             [](const Employee* pInput) ->void
-             {cout << "\t" << pInput->GetName() << endl;} );
+             [&counter](const Employee* pInput) ->void
+             {cout << ++counter << "\t" << pInput->getName() << endl;} );
 }
 
+
 template<typename T>
-void Functions::DisplayLast3IDs(T& ContainerInput)
+void Functions::DisplayLast3IDs(const T& ContainerInput)
 {
     cout << "Num.\tID" << endl;
 
@@ -98,10 +158,13 @@ void Functions::DisplayLast3IDs(T& ContainerInput)
 
     advance(RangeBegin, -3);
 
+    size_t counter = 0;
+
     for_each(RangeBegin, ContainerInput.cend(),
-             [](const Employee* pInput) ->void
-             {cout << "\t" << pInput->GetEmployeeID() << endl;} );
+             [&counter](const Employee* pInput) ->void
+             {cout << ++counter << "\t" << pInput->getEmployeeID() << endl;} );
 }
+
 
 template<typename T>
 void Functions::WriteToFile(const T& ContainerInput)
@@ -113,31 +176,17 @@ void Functions::WriteToFile(const T& ContainerInput)
     {
         cout << "File open for write success!" << endl;
 
-        WriteBuffer << left << setw(5) << "Num." << setw(5) << "ID"
-        << setw(15) << "Name" << setw(15) << "Surname" << setw(15) << "AvgSalary" << endl;
-
-        for(typename T::const_iterator Iterator = ContainerInput.cbegin();
-        Iterator != ContainerInput.cend();
-        ++Iterator)
-        {
-            WriteBuffer << left << setw(5) << distance(ContainerInput.cbegin(), Iterator)
-            << setw(5) << (*Iterator)->GetEmployeeID() << setw(15) << (*Iterator)->GetName()
-            << setw(15) << (*Iterator)->GetSurname() << setw(15)
-            << (*Iterator)->GetAvgSalary() << endl;
-
-        }
+        OutputContainer(WriteBuffer, ContainerInput);
 
         WriteBuffer.close();
         cout << "Write buffer closed!" << endl;
-
     }
     else
         cout << "File open for write fail." << endl;
 
 }
 
-template<typename T>
-void Functions::ReadFromFile(const T& ContainerInput)
+void Functions::ReadFromFile()
 {
     ifstream ReadBuffer;
 

@@ -11,37 +11,38 @@ using namespace Functions;
 
 int main()
 {
-    multiset<Employee*, SortOnName<Employee*> > msetOfEmployees;
+    multiset<Employee*, SortOnSalary<Employee*> > employees;
 
-    PopulateContainer(msetOfEmployees);
-
-    cout << "--TASK A--" << endl;
-    DisplayContainer(msetOfEmployees);
-
-    cout << "--TASK B--" << endl;
-    DisplayFirst5Names(msetOfEmployees);
-
-    cout << "--TASK C--" << endl;
-    DisplayLast3IDs(msetOfEmployees);
-
-    cout << "--TASK D, E--" << endl;
-    WriteToFile(msetOfEmployees);
-
-    //handle read errors
     try
     {
-        ReadFromFile(msetOfEmployees);
+        cout << "--TASK A, E--" << endl;
+        PopulateContainer(employees);
+        OutputContainer(cout, employees);
+
+        cout << "--TASK B--" << endl;
+        DisplayFirst5names(employees);
+
+        cout << "--TASK C--" << endl;
+        DisplayLast3IDs(employees);
+
+        cout << "--TASK D--" << endl;
+        WriteToFile(employees);
+        ReadFromFile();
     }
     catch(const exception& exp)
     {
-        cout << "EXCEPTION IN FUNCTION ReadFromFile()!: " << exp.what() << endl;
+        cout << "Exception: " << exp.what() << endl;
     }
     catch(...)
     {
-        cout << "UNKNOWN EXCEPTION!" << endl;
+        cout << "Unknown exception!" << endl;
     }
 
-    DeleteObjectsBeforeExit(msetOfEmployees);
+    DeleteObjectsBeforeExit(employees);
+
+
+    char ch = '\0';
+    cin >> ch;
 
 
     return 0;

@@ -8,31 +8,31 @@ using std::string;
 class Employee
 {
     public:
-        Employee(const string& inName, const string& inSurname);
-        virtual ~Employee();
+        Employee(const string name, const string surname, const double rate);
+        virtual ~Employee() {}
 
         virtual void CalculateSalary() = 0;
 
         //GETTERS
-        const string& GetName() const;
-        const string& GetSurname() const;
-        const double& GetAvgSalary() const;
-        static const unsigned int& GetIDCounter();
-        const unsigned int& GetEmployeeID() const;
+        const string& getName() const {return name; }
+        const string& getSurname() const {return surname; }
+        const double getRate() const {return rate; }
+        const double getAvgSalary() const {return avgSalary; }
+        const unsigned int getEmployeeID() const {return employeeID; }
 
         //SETTERS
-        double& SetAvgSalary();
+        void setAvgSalary(const double value) {avgSalary = value; };
 
     private:
-        string Name;
-        string Surname;
+        string name;
+        string surname;
 
-        double AvgSalary;
+        double rate;
+        double avgSalary {0.0};
+
+        unsigned int employeeID {0};
 
         static unsigned int IDCounter;//global id counter
-
-        unsigned int EmployeeID;
-
 };
 
 #endif // EMPLOYEE_H

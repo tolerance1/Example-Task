@@ -1,22 +1,13 @@
 #include "MonthlyWaged.h"
 
-void MonthlyWaged::CalculateSalary()
+MonthlyWaged::MonthlyWaged(const string name, const string surname, const double rate)
+: Employee(name, surname, rate)
 {
-    Employee::SetAvgSalary() = Fixed_Wage;
+    CalculateSalary();
 }
 
-
-MonthlyWaged::MonthlyWaged(const string& inName, const string& inSurname,
-                           double inFixed_Wage)
-        : Employee(inName, inSurname),
-        Fixed_Wage(inFixed_Wage)
-        {
-            CalculateSalary();
-        }
-
-
-MonthlyWaged::~MonthlyWaged()
+void MonthlyWaged::CalculateSalary()
 {
-
+    setAvgSalary(getRate() );
 }
 

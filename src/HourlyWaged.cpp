@@ -1,21 +1,12 @@
 #include "HourlyWaged.h"
 
-void HourlyWaged::CalculateSalary()
+HourlyWaged::HourlyWaged(const string name, const string surname, const double rate)
+: Employee(name, surname, rate)
 {
-    Employee::SetAvgSalary() = 20.8 * 8 * Hourly_wage;
+    CalculateSalary();
 }
 
-
-HourlyWaged::HourlyWaged(const string& inName, const string& inSurname,
-                         double inHourly_wage)
-        : Employee(inName, inSurname),
-        Hourly_wage(inHourly_wage)
-        {
-            CalculateSalary();
-        }
-
-
-HourlyWaged::~HourlyWaged()
+void HourlyWaged::CalculateSalary()
 {
-
+    setAvgSalary(Days * Hours * getRate() );
 }

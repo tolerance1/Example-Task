@@ -6,15 +6,14 @@
 class HourlyWaged : public Employee
 {
     public:
-        HourlyWaged(const string& inName, const string& inSurname,
-                    double inHourly_wage = 0.0);
-        ~HourlyWaged();
+        HourlyWaged(const string name, const string surname, const double rate);
+        ~HourlyWaged() {}
 
         void CalculateSalary();
 
     private:
-        double Hourly_wage;
-
+        double Hours {8};
+        double Days {20.8};
 };
 
 #endif // HOURLYWAGED_H

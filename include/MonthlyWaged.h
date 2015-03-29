@@ -6,15 +6,10 @@
 class MonthlyWaged: public Employee
 {
     public:
-        MonthlyWaged(const string& inName, const string& inSurname,
-                     double inFixed_Wage = 0.0);
-        ~MonthlyWaged();
+        MonthlyWaged(const string name, const string surname, const double rate);
+        ~MonthlyWaged() {}
 
         void CalculateSalary();
-
-    private:
-        double Fixed_Wage;
-
 };
 
 #endif // MONTHLYWAGED_H
